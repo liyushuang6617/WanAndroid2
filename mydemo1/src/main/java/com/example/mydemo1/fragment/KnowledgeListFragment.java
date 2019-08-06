@@ -9,18 +9,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.example.mydemo1.R;
 import com.example.mydemo1.adapter.RlvArticleAdapter;
 import com.example.mydemo1.adapter.RlvKnowledgeListAdapter;
+import com.example.mydemo1.api.MyService;
+import com.example.mydemo1.base.BaseResponse;
 import com.example.mydemo1.bean.ArticleItemBean;
 import com.example.mydemo1.bean.ArticleListData;
 import com.example.mydemo1.bean.KnowledgeItemBean;
 import com.example.mydemo1.constant.Constants;
 import com.example.mydemo1.contract.KnowledgeActivityContract;
+import com.example.mydemo1.http.HttpManager;
 import com.example.mydemo1.presenter.KnowledgeActivityPresenter;
 import com.example.mydemo1.utils.HomePagerUtils;
+import com.example.mydemo1.utils.RxUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -31,6 +37,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -93,6 +101,66 @@ public class KnowledgeListFragment extends BaseFragment<KnowledgeActivityContrac
     }
 
     private void collectClickEvent(int position) {
+        int id = articleItemBeans.get(position).getId();
+        if (articleItemBeans.get(position).isCollect()) {
+            HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect_originId/" + id + "" + "/json")
+                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                    .subscribe(new Observer<BaseResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(BaseResponse baseResponse) {
+                            if (baseResponse.getErrorMsg() == "") {
+                                Toast.makeText(getActivity(), "已取消收藏", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+        } else {
+            HttpManager.getInstance().getApiService(MyService.class).getCollectionItem("lg/collect/" + id + "" + "/json")
+                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                    .subscribe(new Observer<BaseResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(BaseResponse baseResponse) {
+                            if (baseResponse.getErrorMsg() == "") {
+                                Toast.makeText(getActivity(), "收藏成功", Toast.LENGTH_SHORT).show();
+                                View view = View.inflate(getActivity(), R.layout.item_artice_list, null);
+                                ImageView viewById = view.findViewById(R.id.iv_article_like);
+                                viewById.setImageResource(R.drawable.ic_like);
+                            } else {
+                                Toast.makeText(getActivity(), "请先登录", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: " + e.getMessage());
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+
+        }
     }
 
     private void startArticleDetailPager(View view, int position) {

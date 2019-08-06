@@ -15,10 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="HardcodedDebugMode">
-        <activity android:name=".MainActivity">
-
-        </activity>
-        <activity android:name=".activity.ShouYeActivity" >
+        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".activity.ShouYeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,9 +31,8 @@
         <activity android:name=".activity.SearchActivity" />
         <activity android:name=".activity.Main2Activity" />
         <activity android:name=".activity.ResultSearchActivity" />
-        <activity android:name=".activity.CollectionActivity">
-
-        </activity>
+        <activity android:name=".activity.CollectionActivity"></activity>
+        <activity android:name=".activity.SettingActivity"></activity>
     </application>
 
 </manifest>

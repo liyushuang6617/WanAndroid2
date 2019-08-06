@@ -11,8 +11,10 @@ import javax.inject.Inject;
 public class MyApp extends Application {
 
     public static boolean isNaightMode;
+    public static boolean isLogin;
     private static MyApp app;
-    private static Context context;
+    public static String username;
+    public static String userpwd;
     @Inject
     private DataManager mDataManager;
 

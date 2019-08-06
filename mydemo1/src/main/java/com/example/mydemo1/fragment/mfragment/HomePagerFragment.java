@@ -12,15 +12,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.example.mydemo1.R;
 import com.example.mydemo1.activity.CollectionActivity;
+import com.example.mydemo1.activity.LoginActivity;
 import com.example.mydemo1.activity.ShouYeActivity;
 import com.example.mydemo1.adapter.RlvArticleAdapter;
 import com.example.mydemo1.api.MyService;
+import com.example.mydemo1.app.Globle;
 import com.example.mydemo1.base.BaseResponse;
 import com.example.mydemo1.bean.ArticleItemBean;
 import com.example.mydemo1.bean.ArticleListData;
@@ -53,6 +57,9 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -115,7 +122,7 @@ public class HomePagerFragment extends BaseFragment<HomePagerContract.HomePagerV
 
         listbanner = new ArrayList<>();
         mPresenter.HomePagerhttp(page);
-        initSmartRefresh();
+//        initSmartRefresh();
     }
 
     private void initSmartRefresh() {
@@ -153,6 +160,7 @@ public class HomePagerFragment extends BaseFragment<HomePagerContract.HomePagerV
                 //todo chapter click
                 break;
             case R.id.iv_article_like:
+
                 collectClickEvent(position);
                 break;
             case R.id.tv_article_tag:
@@ -163,35 +171,69 @@ public class HomePagerFragment extends BaseFragment<HomePagerContract.HomePagerV
         }
     }
 
-    private void collectClickEvent(int position) {//8655
-        int originId = articleListBeans.get(position).getOriginId();
-        HttpManager.getInstance().getApiService(MyService.class).getCollectionItem("lg/collect/"+originId+""+"/json")
-                .compose(RxUtils.<BaseResponse>rxScheduleThread())
-                .subscribe(new Observer<BaseResponse>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
+    private void collectClickEvent(final int position) {//8655
+        int id = articleListBeans.get(position).getId();
+        if (articleListBeans.get(position).isCollect()) {
+            HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect_originId/" + id + "" + "/json")
+                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                    .subscribe(new Observer<BaseResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
 
-                    }
-
-                    @Override
-                    public void onNext(BaseResponse baseResponse) {
-                        if (baseResponse.getData() == null) {
-                            Toast.makeText(getActivity(), "收藏成功", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getActivity(), "取消收藏", Toast.LENGTH_SHORT).show();
                         }
-                    }
 
-                    @Override
-                    public void onError(Throwable e) {
+                        @Override
+                        public void onNext(BaseResponse baseResponse) {
+                            if (baseResponse.getErrorMsg() == "") {
+                                articleListBeans.get(position).setCollect(false);
+                                adapter.notifyDataSetChanged();
+                                Toast.makeText(getActivity(), "已取消收藏", Toast.LENGTH_SHORT).show();
+                            }
+                        }
 
-                    }
+                        @Override
+                        public void onError(Throwable e) {
 
-                    @Override
-                    public void onComplete() {
+                        }
 
-                    }
-                });
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+        } else {
+            HttpManager.getInstance().getApiService(MyService.class).getCollectionItem("lg/collect/" + id + "" + "/json")
+                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                    .subscribe(new Observer<BaseResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(BaseResponse baseResponse) {
+                            if (baseResponse.getErrorMsg() == "") {
+                                articleListBeans.get(position).setCollect(true);
+                                adapter.notifyDataSetChanged();
+                                Toast.makeText(getActivity(), "收藏成功", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getActivity(), "请先登录", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(getActivity(), LoginActivity.class));
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: " + e.getMessage());
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+
+        }
     }
 
     @Override

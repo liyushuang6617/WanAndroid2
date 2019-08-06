@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.example.mydemo1.R;
@@ -86,7 +88,14 @@ public class WxArticleListFragment extends Fragment {
         rlvWxArticleItemAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                startArticleActivity(view,position);
+                startArticleActivity(view, position);
+            }
+        });
+
+        rlvWxArticleItemAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                collectClickEvent(position);
             }
         });
         mWxArticleListRecycleView.setHasFixedSize(true);
@@ -106,5 +115,73 @@ public class WxArticleListFragment extends Fragment {
     }
 
     public void jumpToTheTop() {
+        if (mWxArticleListRecycleView != null) {
+            mWxArticleListRecycleView.smoothScrollToPosition(0);
+        }
+    }
+
+    private static final String TAG = "WxArticleListFragment";
+
+    private void collectClickEvent(int position) {//8655
+        int id = wxArticleListBeans.get(position).getId();
+        if (wxArticleListBeans.get(position).isCollect()) {
+            HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect_originId/" + id + "" + "/json")
+                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                    .subscribe(new Observer<BaseResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(BaseResponse baseResponse) {
+                            if (baseResponse.getErrorMsg() == "") {
+                                Toast.makeText(getActivity(), "已取消收藏", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+        } else {
+            HttpManager.getInstance().getApiService(MyService.class).getCollectionItem("lg/collect/" + id + "" + "/json")
+                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                    .subscribe(new Observer<BaseResponse>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(BaseResponse baseResponse) {
+                            if (baseResponse.getErrorMsg() == "") {
+                                Toast.makeText(getActivity(), "收藏成功", Toast.LENGTH_SHORT).show();
+                                View view = View.inflate(getActivity(), R.layout.item_artice_list, null);
+                                ImageView viewById = view.findViewById(R.id.iv_article_like);
+                                viewById.setImageResource(R.drawable.ic_like);
+                            } else {
+                                Toast.makeText(getActivity(), "请先登录", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: " + e.getMessage());
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+
+        }
     }
 }

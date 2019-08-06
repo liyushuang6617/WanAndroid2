@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -28,7 +29,7 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
-public class CollectionActivity extends AppCompatActivity {
+public class CollectionActivity extends AppCompatActivity implements RlvCollectionAdapter.noCollection {
 
 //    @BindView(R.id.collection_recycle_view)
 //    RecyclerView collectionRecycleView;
@@ -65,11 +66,8 @@ public class CollectionActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(CollectionDataBean collectionDataBean) {
-                        List<CollectionDataBean.DatasBean> datas = collectionDataBean.getDatas();
                         list.addAll(collectionDataBean.getDatas());
                         adapter.notifyDataSetChanged();
-//                        originId = datas.get(0).getOriginId();
-//                        collectionData();
                     }
 
 
@@ -112,31 +110,42 @@ public class CollectionActivity extends AppCompatActivity {
         adapter = new RlvCollectionAdapter(this, list);
         mCollectionRecycleView.setHasFixedSize(true);
         mCollectionRecycleView.setAdapter(adapter);
+
+        adapter.setCollection(this);
     }
 
-//    private void collectionData() {
-//        HttpManager.getInstance().getApiService(MyService.class).getCollectionItem(originId)
-//                .compose(RxUtils.<BaseResponse>rxScheduleThread())
-//                .subscribe(new Observer<BaseResponse>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onNext(BaseResponse baseResponse) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
-//    }
+    @Override
+    public void onClicknoClooection(int pos, CollectionDataBean.DatasBean bean) {//2333
+        int id = bean.getId();
+        int originId = bean.getOriginId();
+        if (TextUtils.isEmpty(originId + "")) {
+            originId = -1;
+        }
+        HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect/" + id + "" + "/json", originId)
+                .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                .subscribe(new Observer<BaseResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(BaseResponse baseResponse) {
+                        if (baseResponse.getErrorMsg() == "") {
+                            Toast.makeText(CollectionActivity.this, "取消收藏", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+        adapter.notifyDataSetChanged();
+    }
 }

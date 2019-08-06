@@ -2,6 +2,7 @@ package com.example.mydemo1.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,6 +14,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,18 +22,29 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mydemo1.MainActivity;
 import com.example.mydemo1.R;
+import com.example.mydemo1.api.MyService;
+import com.example.mydemo1.api.NaightModel;
 import com.example.mydemo1.app.MyApp;
+import com.example.mydemo1.base.BaseObsever;
+import com.example.mydemo1.base.BaseResponse;
 import com.example.mydemo1.base.SimpleActivity;
+import com.example.mydemo1.bean.LoginDataBean;
 import com.example.mydemo1.constant.Constants;
 import com.example.mydemo1.contract.ShouYeContract;
 import com.example.mydemo1.fragment.ProjectListItemFragment;
 import com.example.mydemo1.fragment.WxArticleListFragment;
+import com.example.mydemo1.fragment.loginfragment.LoginFragment;
 import com.example.mydemo1.fragment.mfragment.HomePagerFragment;
 import com.example.mydemo1.fragment.mfragment.KnowledgeFragment;
 import com.example.mydemo1.fragment.mfragment.NavigationFragment;
 import com.example.mydemo1.fragment.mfragment.ProjectFragment;
 import com.example.mydemo1.fragment.mfragment.WxArticleFragment;
+import com.example.mydemo1.http.HttpManager;
+import com.example.mydemo1.utils.AppSharePreferenceMgr;
+import com.example.mydemo1.utils.RxUtils;
+import com.example.mydemo1.utils.SharePrefUtility;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -39,6 +52,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 public class ShouYeActivity extends SimpleActivity {
 
@@ -66,14 +81,16 @@ public class ShouYeActivity extends SimpleActivity {
 
     private int mCurrentFgIndex = 0;
     private int mLastFgIndex = -1;
-    private String loginName;
-    private String loginPwd;
     private TextView login;
     private String loginuser;
+    private long clickTime;
+    private static final String TAG = "ShouYeActivity";
+    private SharedPreferences sp;
 
     @Override
     protected void initViewAndData() {
 
+        loginCreate();
         initToolbar();
         initDrawerLayout();
         showFragment(mCurrentFgIndex);
@@ -81,6 +98,50 @@ public class ShouYeActivity extends SimpleActivity {
         initBottomNavigationView();
         initHeadLayoutId();
         logintext();
+
+    }
+
+    private void loginCreate() {
+        sp = getSharedPreferences("login", MODE_PRIVATE);
+        boolean tab = sp.getBoolean("tab", false);
+        if (tab) {
+            Log.e(TAG, "loginCreate: " + "success");
+            final String name = sp.getString("name", null);
+            String pwd = sp.getString("pwd", null);
+            HttpManager.getInstance().getApiService(MyService.class).getLoginData("user/login", name, pwd)
+                    .compose(RxUtils.<BaseResponse<LoginDataBean>>rxScheduleThread())
+                    .compose(RxUtils.<LoginDataBean>changeResult())
+                    .subscribe(new Observer<LoginDataBean>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onNext(LoginDataBean loginDataBean) {
+
+                            if (MyApp.isLogin) {
+                                Toast.makeText(ShouYeActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
+                                login.setText(name);
+                            } else {
+                                login.setText("登录");
+                            }
+
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: " + e.getMessage());
+                        }
+
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+        } else {
+            Log.e(TAG, "loginCreate: " + "欢迎");
+        }
     }
 
     private void initHeadLayoutId() {
@@ -95,10 +156,6 @@ public class ShouYeActivity extends SimpleActivity {
                 startActivity(intent);
             }
         });
-
-        SharedPreferences sp = getSharedPreferences("login", MODE_PRIVATE);
-        String status = sp.getString("status", "");
-        login.setText(status);
     }
 
     private void logintext() {
@@ -142,31 +199,56 @@ public class ShouYeActivity extends SimpleActivity {
     private void initNavigationView() {
         shouyeNavig.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+            public boolean onNavigationItemSelected(@NonNull final MenuItem menuItem) {
 
                 switch (menuItem.getItemId()) {
                     case R.id.nav_item_my_collect:
                         startActivity(new Intent(ShouYeActivity.this, CollectionActivity.class));
                         break;
                     case R.id.nav_item_todo:
+                        Toast.makeText(ShouYeActivity.this, "正在研发中，敬请期待...", Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.nav_item_night_mode:
                         if (MyApp.isNaightMode) {
                             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                            MyApp.isNaightMode = true;
                             menuItem.setTitle(R.string.nav_day_mode);
                         } else {
                             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                            MyApp.isNaightMode = false;
                             menuItem.setTitle(R.string.nav_night_mode);
                         }
                         recreate();
                         break;
                     case R.id.nav_item_setting:
+                        startActivity(new Intent(ShouYeActivity.this, SettingActivity.class));
                         break;
                     case R.id.nav_item_about_us:
                         break;
                     case R.id.nav_item_logout:
-                        login.setText("登录");
-                        menuItem.setVisible(false);
+                        HttpManager.getInstance().getApiService(MyService.class).getUnlogin("user/logout/json")
+                                .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                                .subscribe(new BaseObsever<BaseResponse>() {
+                                    @Override
+                                    public void onSuccess(BaseResponse data) {
+                                        if (data.getErrorMsg() == "") {
+                                            Toast.makeText(ShouYeActivity.this, "退出登录", Toast.LENGTH_SHORT).show();
+                                            login.setText("登录");
+                                            menuItem.setVisible(false);
+                                            sp.edit().remove("name");
+                                            sp.edit().remove("pwd");
+                                            sp.edit().commit();
+                                            MyApp.isLogin = false;
+                                        }
+                                    }
+
+                                    private static final String TAG = "ShouYeActivity";
+
+                                    @Override
+                                    public void onFail(String error) {
+                                        Toast.makeText(ShouYeActivity.this, error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                         break;
 
                 }
@@ -345,4 +427,19 @@ public class ShouYeActivity extends SimpleActivity {
         }
     }
 
+    //添加回退栈
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 1) {
+            //pop();
+        } else {
+            long currentTime = System.currentTimeMillis();
+            if ((currentTime - clickTime) > Constants.DOUBLE_INTERVAL_TIME) {
+                Toast.makeText(this, getString(R.string.double_click_exit_toast), Toast.LENGTH_SHORT).show();
+                clickTime = System.currentTimeMillis();
+            } else {
+                finish();
+            }
+        }
+    }
 }

@@ -21,10 +21,13 @@ import android.widget.Toast;
 import com.example.mydemo1.R;
 import com.example.mydemo1.activity.LoginActivity;
 import com.example.mydemo1.activity.ShouYeActivity;
+import com.example.mydemo1.app.MyApp;
 import com.example.mydemo1.bean.LoginDataBean;
 import com.example.mydemo1.contract.LoginActivityContract;
 import com.example.mydemo1.fragment.BaseFragment;
 import com.example.mydemo1.presenter.LoginActivityPresenter;
+import com.example.mydemo1.utils.AppSharePreferenceMgr;
+import com.example.mydemo1.utils.SharePrefUtility;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -75,13 +78,25 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
     @Override
     public void onLoginActivitySuccess(LoginDataBean responseBody) {
         Toast.makeText(getActivity(), "成功", Toast.LENGTH_SHORT).show();
+
         Intent intent = new Intent(getActivity(), ShouYeActivity.class);
         intent.putExtra("loginuser", loginName);
         getActivity().startActivity(intent);
+
         SharedPreferences sp = getActivity().getSharedPreferences("login", MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
-        edit.putString("status", loginName);
-        edit.commit();
+        edit.putString("name", loginName);
+        edit.putString("pwd", loginPwd);
+        MyApp.isLogin = true;
+        edit.putBoolean("tab", MyApp.isLogin);
+        edit.apply();
+        MyApp.username = loginName;
+        MyApp.userpwd = loginPwd;
+
+        SharePrefUtility.setParam(getActivity(), SharePrefUtility.IS_LOGIN, false);
+
+        String loginname = getArguments().getString("loginname");
+        loginEtName.setText(loginname);
     }
 
     @OnClick({R.id.login_tv_not, R.id.login_btn})
@@ -92,6 +107,7 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
                 break;
             case R.id.login_tv_not:
                 replaceFrament();
+
                 break;
         }
     }
@@ -118,6 +134,7 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.replace(R.id.login_fragment, accountFragment);
         transaction.commit();
+
     }
 
 

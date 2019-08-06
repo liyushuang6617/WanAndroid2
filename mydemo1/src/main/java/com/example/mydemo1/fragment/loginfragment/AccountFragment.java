@@ -105,20 +105,22 @@ public class AccountFragment extends BaseFragment<AccountContract.AccountView, A
     public void onAccountSuccess(AccountDataBean accountDataBean) {
         LoginFragment loginFragment = new LoginFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("loginname",accountName);
+        bundle.putString("loginname", accountName);
         loginFragment.setArguments(bundle);
     }
 
+    private static final String TAG = "AccountFragment";
+
     @Override
     public void onAccountFail(String msg) {
-
+        Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
     }
 
     @OnClick({R.id.account_tv_not, R.id.account_btn})
     public void getAccOunt(View view) {
+        LoginFragment loginFragment = new LoginFragment();
         switch (view.getId()) {
             case R.id.account_tv_not:
-                LoginFragment loginFragment = new LoginFragment();
                 manager = getActivity().getSupportFragmentManager();
                 FragmentTransaction transaction = manager.beginTransaction();
                 transaction.replace(R.id.login_fragment, loginFragment);
@@ -126,6 +128,10 @@ public class AccountFragment extends BaseFragment<AccountContract.AccountView, A
                 break;
             case R.id.account_btn:
                 account();
+                manager = getActivity().getSupportFragmentManager();
+                FragmentTransaction transaction1 = manager.beginTransaction();
+                transaction1.replace(R.id.login_fragment, loginFragment);
+                transaction1.commit();
                 break;
         }
     }

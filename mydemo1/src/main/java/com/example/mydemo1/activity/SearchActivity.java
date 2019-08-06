@@ -92,7 +92,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                             textView = (TextView) View.inflate(SearchActivity.this, R.layout.flow_layout_tv, null);
                             textView.setText(searchHotBeans.get(i).getName());
                             textView.setTextColor(HomePagerUtils.getRandomColor());
-                            mSearchFlowLayout.addView(textView);
                             text = textView.getText().toString();
                             TextView viewById = textView.findViewById(R.id.common_title_tv);
                             viewById.setOnClickListener(new View.OnClickListener() {
@@ -103,6 +102,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                     startActivity(intent1);
                                 }
                             });
+                            mSearchFlowLayout.addView(textView);
                         }
 
                     }

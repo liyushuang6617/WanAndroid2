@@ -88,6 +88,9 @@ public class ArticleDetailActivity extends SimpleActivity {
             case R.id.article_share:
 
                 break;
+            case R.id.article_collect:
+
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

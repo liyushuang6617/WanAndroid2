@@ -38,7 +38,7 @@ public class RlvCollectionAdapter extends RecyclerView.Adapter<RlvCollectionAdap
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int i) {
         if (!TextUtils.isEmpty(list.get(i).getAuthor())) {
             viewHolder.tvArticleAuthor.setText(list.get(i).getAuthor());
         }
@@ -64,6 +64,14 @@ public class RlvCollectionAdapter extends RecyclerView.Adapter<RlvCollectionAdap
             viewHolder.tvArticleNiceDate.setText(list.get(i).getNiceDate());
         }
 
+        viewHolder.ivArticleLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (collection != null) {
+                    collection.onClicknoClooection(i, list.get(i));
+                }
+            }
+        });
     }
 
     @Override
@@ -98,5 +106,16 @@ public class RlvCollectionAdapter extends RecyclerView.Adapter<RlvCollectionAdap
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
+    }
+
+
+    public noCollection collection;
+
+    public void setCollection(noCollection collection) {
+        this.collection = collection;
+    }
+
+    public interface noCollection {
+        void onClicknoClooection(int pos, CollectionDataBean.DatasBean bean);
     }
 }

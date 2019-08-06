@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 public class BottomNavigationBehavior extends CoordinatorLayout.Behavior<View> {
+
     private ObjectAnimator outAnimator, inAnimator;
 
     public BottomNavigationBehavior(Context context, AttributeSet attrs) {
@@ -25,7 +26,7 @@ public class BottomNavigationBehavior extends CoordinatorLayout.Behavior<View> {
         if (dy > 0) {// 上滑隐藏
             if (outAnimator == null) {
                 outAnimator = ObjectAnimator.ofFloat(child, "translationY", 0, child.getHeight());
-                outAnimator.setDuration(400);
+                outAnimator.setDuration(200);
             }
             if (!outAnimator.isRunning() && child.getTranslationY() <= 0) {
                 outAnimator.start();

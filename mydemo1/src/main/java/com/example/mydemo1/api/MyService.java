@@ -168,6 +168,16 @@ public interface MyService {
     Observable<BaseResponse<AccountDataBean>> getAccOunt(@Url String url, @Field("username") String username, @Field("password") String password, @Field("repassword") String repassword);
 
     /**
+     * 退出登录
+     * https://www.wanandroid.com/user/logout/json
+     *
+     * @param url
+     * @return
+     */
+    @GET
+    Observable<BaseResponse> getUnlogin(@Url String url);
+
+    /**
      * 搜索
      * https://www.wanandroid.com/article/query/0/json
      * 页码：拼接在链接上，从0开始。
@@ -223,4 +233,24 @@ public interface MyService {
      */
     @POST
     Observable<BaseResponse> getCollectionItem(@Url String url);
+
+    /**
+     * 通过文章取消收藏
+     * https://www.wanandroid.com/lg/uncollect_originId/2333/json
+     *
+     * @param url
+     * @return
+     */
+    @POST
+    Observable<BaseResponse> getNoCollection(@Url String url);
+
+    /**
+     * 通过收藏页面取消收藏
+     * https://www.wanandroid.com/lg/uncollect/2805/json
+     *
+     * @return
+     */
+    @POST
+    @FormUrlEncoded
+    Observable<BaseResponse> getNoCollection(@Url String url, @Field("originId") int originId);
 }

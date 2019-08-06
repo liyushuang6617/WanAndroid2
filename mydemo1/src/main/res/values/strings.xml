@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">Wandroid</string>
 
     <string name="my_collect">我的收藏</string>
@@ -67,7 +67,7 @@
     <!-- Common -->
     <string name="http_error">network anomaly</string>
     <string name="unKnown_error">unKnown error</string>
-    <string name="double_click_exit_toast">Press the back button again to exit</string>
+    <string name="double_click_exit_toast">再按一下退出WanAndroid</string>
     <string name="loading">Loading</string>
     <string name="failed_to_get_navigation_data">Failed to get navigation data</string>
     <string name="failed_to_get_project_data">Failed to get project data</string>
@@ -76,8 +76,8 @@
     <string name="in_the_process">In the process of development, please look forward to it.</string>
 
     <!-- Setting detail -->
-    <string name="cache_setting">Cache Setting</string>
-    <string name="clear_cache">Clear Cache</string>
+    <string name="cache_setting">缓存设置</string>
+    <string name="clear_cache">清空缓存</string>
 
     <!-- Article detail -->
     <string name="share">Share</string>

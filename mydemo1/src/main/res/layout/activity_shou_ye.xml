@@ -27,8 +27,8 @@
             android:layout_gravity="bottom|right"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="72dp"
-            app:layout_behavior="com.example.mydemo1.utils.BottomNavigationBehavior"
             android:backgroundTint="@color/floating_button"
+            app:layout_behavior="com.example.mydemo1.utils.ScaleDownShowBehavior"
             app:srcCompat="@drawable/ic_arrow_upward_white_24dp" />
 
         <android.support.design.widget.BottomNavigationView
@@ -53,5 +53,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="left"
+        android:background="@color/view_bg"
+        app:itemIconTint="@color/item_title"
+        app:itemTextColor="@color/item_title"
         app:menu="@menu/shouye_navig_menu" />
 </android.support.v4.widget.DrawerLayout>
