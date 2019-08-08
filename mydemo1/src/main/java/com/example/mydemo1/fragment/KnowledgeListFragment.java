@@ -1,6 +1,7 @@
 package com.example.mydemo1.fragment;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.example.mydemo1.R;
+import com.example.mydemo1.activity.LoginActivity;
 import com.example.mydemo1.adapter.RlvArticleAdapter;
 import com.example.mydemo1.adapter.RlvKnowledgeListAdapter;
 import com.example.mydemo1.api.MyService;
@@ -100,7 +102,7 @@ public class KnowledgeListFragment extends BaseFragment<KnowledgeActivityContrac
         }
     }
 
-    private void collectClickEvent(int position) {
+    private void collectClickEvent(final int position) {
         int id = articleItemBeans.get(position).getId();
         if (articleItemBeans.get(position).isCollect()) {
             HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect_originId/" + id + "" + "/json")
@@ -114,6 +116,8 @@ public class KnowledgeListFragment extends BaseFragment<KnowledgeActivityContrac
                         @Override
                         public void onNext(BaseResponse baseResponse) {
                             if (baseResponse.getErrorMsg() == "") {
+                                articleItemBeans.get(position).setCollect(false);
+                                adapter.notifyDataSetChanged();
                                 Toast.makeText(getActivity(), "已取消收藏", Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -140,12 +144,12 @@ public class KnowledgeListFragment extends BaseFragment<KnowledgeActivityContrac
                         @Override
                         public void onNext(BaseResponse baseResponse) {
                             if (baseResponse.getErrorMsg() == "") {
+                                articleItemBeans.get(position).setCollect(true);
+                                adapter.notifyDataSetChanged();
                                 Toast.makeText(getActivity(), "收藏成功", Toast.LENGTH_SHORT).show();
-                                View view = View.inflate(getActivity(), R.layout.item_artice_list, null);
-                                ImageView viewById = view.findViewById(R.id.iv_article_like);
-                                viewById.setImageResource(R.drawable.ic_like);
                             } else {
                                 Toast.makeText(getActivity(), "请先登录", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(getActivity(),LoginActivity.class));
                             }
                         }
 

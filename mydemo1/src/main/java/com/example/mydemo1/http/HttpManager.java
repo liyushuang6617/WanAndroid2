@@ -1,5 +1,7 @@
 package com.example.mydemo1.http;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -36,6 +38,7 @@ public class HttpManager {
 
     private static final String TAG = "HttpManager";
     private static HttpManager httpManager;
+    private Context context;
 
     private HttpManager() {
     }
@@ -94,30 +97,6 @@ public class HttpManager {
                 .cookieJar(cookieJar)
                 .build();
     }
-
-    Interceptor tokenInterceptor = new Interceptor() {//全局拦截器，往请求头部添加 token 字段，实现了全局添加 token
-        @Override
-        public Response intercept(Chain chain) throws IOException {
-            Request request = chain.request();
-            Response response = chain.proceed(request);
-            Log.d(TAG, "response.code=" + response.code());
-
-            //根据和服务端的约定判断token过期
-            if (isTokenExpired(response)) {
-                Log.d(TAG, "自动刷新Token,然后重新请求数据");
-                //同步请求方式，获取最新的Token
-                String newToken = getNewToken();
-                //使用新的Token，创建新的请求
-                Request newRequest = chain.request()
-                        .newBuilder()
-                        .header("Authorization", "Basic " + newToken)
-                        .build();
-                //重新请求
-                return chain.proceed(newRequest);
-            }
-            return response;
-        }
-    };
 
 
     //post 不可以做缓存
@@ -197,4 +176,6 @@ public class HttpManager {
             return cookieList != null ? cookieList : new ArrayList<Cookie>();
         }
     };
+
+
 }

@@ -149,7 +149,7 @@ public class ProjectListItemFragment extends BaseFragment<ProjectListItemContrac
         }
     }
 
-    private void collectClickEvent(int position) {//8655
+    private void collectClickEvent(final int position) {//8655
         int id = projectListItemBeans.get(position).getId();
         if (projectListItemBeans.get(position).isCollect()) {
             HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect_originId/" + id + "" + "/json")
@@ -163,6 +163,8 @@ public class ProjectListItemFragment extends BaseFragment<ProjectListItemContrac
                         @Override
                         public void onNext(BaseResponse baseResponse) {
                             if (baseResponse.getErrorMsg() == "") {
+                                projectListItemBeans.get(position).setCollect(false);
+                                adapter.notifyDataSetChanged();
                                 Toast.makeText(getActivity(), "已取消收藏", Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -189,10 +191,9 @@ public class ProjectListItemFragment extends BaseFragment<ProjectListItemContrac
                         @Override
                         public void onNext(BaseResponse baseResponse) {
                             if (baseResponse.getErrorMsg() == "") {
+                                projectListItemBeans.get(position).setCollect(true);
+                                adapter.notifyDataSetChanged();
                                 Toast.makeText(getActivity(), "收藏成功", Toast.LENGTH_SHORT).show();
-                                View view = View.inflate(getActivity(), R.layout.item_artice_list, null);
-                                ImageView viewById = view.findViewById(R.id.iv_article_like);
-                                viewById.setImageResource(R.drawable.ic_like);
                             } else {
                                 Toast.makeText(getActivity(), "请先登录", Toast.LENGTH_SHORT).show();
                             }

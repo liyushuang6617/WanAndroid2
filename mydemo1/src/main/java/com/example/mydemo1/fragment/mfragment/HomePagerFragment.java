@@ -171,7 +171,7 @@ public class HomePagerFragment extends BaseFragment<HomePagerContract.HomePagerV
         }
     }
 
-    private void collectClickEvent(final int position) {//8655
+    private void  collectClickEvent(final int position) {//8655
         int id = articleListBeans.get(position).getId();
         if (articleListBeans.get(position).isCollect()) {
             HttpManager.getInstance().getApiService(MyService.class).getNoCollection("lg/uncollect_originId/" + id + "" + "/json")

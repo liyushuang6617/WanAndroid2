@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,10 +33,16 @@ import com.example.mydemo1.utils.SharePrefUtility;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.IOException;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -59,6 +66,7 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
     private FragmentManager manager;
     private String nickname;
     private String password;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected int createLayout() {
@@ -72,7 +80,7 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
 
     @Override
     protected void initViewAndData() {
-
+        sharedPreferences = getActivity().getSharedPreferences("status", MODE_PRIVATE);
     }
 
     @Override
@@ -90,10 +98,6 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
         MyApp.isLogin = true;
         edit.putBoolean("tab", MyApp.isLogin);
         edit.apply();
-        MyApp.username = loginName;
-        MyApp.userpwd = loginPwd;
-
-        SharePrefUtility.setParam(getActivity(), SharePrefUtility.IS_LOGIN, false);
 
         String loginname = getArguments().getString("loginname");
         loginEtName.setText(loginname);
@@ -145,5 +149,28 @@ public class LoginFragment extends BaseFragment<LoginActivityContract.LoginActiv
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getString(String title) {
+    }
+
+    private static final String TAG = "LoginFragment";
+
+    class CookieInterceptor implements Interceptor {
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Request request = chain.request();
+            Response response = chain.proceed(request);
+            List<String> headers = response.headers("Set-Cookie");
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < headers.size(); i++) {
+                String cookidGet = headers.get(i);
+                String substring = cookidGet.substring(0, cookidGet.indexOf(";"));
+                stringBuilder.append(substring);
+                if (!(i == headers.size() - 1)) {
+                    stringBuilder.append(";");
+                }
+            }
+            Log.e(TAG, "intercept: " + stringBuilder.toString());
+            sharedPreferences.edit().putString("cookie", stringBuilder.toString()).apply();
+            return response;
+        }
     }
 }

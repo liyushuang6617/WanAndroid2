@@ -104,43 +104,48 @@ public class ShouYeActivity extends SimpleActivity {
     private void loginCreate() {
         sp = getSharedPreferences("login", MODE_PRIVATE);
         boolean tab = sp.getBoolean("tab", false);
-        if (tab) {
-            Log.e(TAG, "loginCreate: " + "success");
-            final String name = sp.getString("name", null);
-            String pwd = sp.getString("pwd", null);
-            HttpManager.getInstance().getApiService(MyService.class).getLoginData("user/login", name, pwd)
-                    .compose(RxUtils.<BaseResponse<LoginDataBean>>rxScheduleThread())
-                    .compose(RxUtils.<LoginDataBean>changeResult())
-                    .subscribe(new Observer<LoginDataBean>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
+        if (sp!=null) {
+            if (tab) {
+                Log.e(TAG, "loginCreate: " + "success");
+                final String name = sp.getString("name", null);
+                String pwd = sp.getString("pwd", null);
+                HttpManager.getInstance().getApiService(MyService.class).getLoginData("user/login", name, pwd)
+                        .compose(RxUtils.<BaseResponse<LoginDataBean>>rxScheduleThread())
+                        .compose(RxUtils.<LoginDataBean>changeResult())
+                        .subscribe(new Observer<LoginDataBean>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
 
-                        }
-
-                        @Override
-                        public void onNext(LoginDataBean loginDataBean) {
-
-                            if (MyApp.isLogin) {
-                                Toast.makeText(ShouYeActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
-                                login.setText(name);
-                            } else {
-                                login.setText("登录");
                             }
 
-                        }
+                            @Override
+                            public void onNext(LoginDataBean loginDataBean) {
 
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.e(TAG, "onError: " + e.getMessage());
-                        }
+                                if (MyApp.isLogin) {
+                                    Toast.makeText(ShouYeActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
+                                    login.setText(name);
+                                } else {
+                                    login.setText("登录");
+                                }
 
-                        @Override
-                        public void onComplete() {
+                            }
 
-                        }
-                    });
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "onError: " + e.getMessage());
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
+
+            } else {
+                Log.e(TAG, "loginCreate: " + "欢迎");
+            }
         } else {
-            Log.e(TAG, "loginCreate: " + "欢迎");
+            Toast.makeText(this, "没有登录哈", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -226,29 +231,34 @@ public class ShouYeActivity extends SimpleActivity {
                     case R.id.nav_item_about_us:
                         break;
                     case R.id.nav_item_logout:
-                        HttpManager.getInstance().getApiService(MyService.class).getUnlogin("user/logout/json")
-                                .compose(RxUtils.<BaseResponse>rxScheduleThread())
-                                .subscribe(new BaseObsever<BaseResponse>() {
-                                    @Override
-                                    public void onSuccess(BaseResponse data) {
-                                        if (data.getErrorMsg() == "") {
-                                            Toast.makeText(ShouYeActivity.this, "退出登录", Toast.LENGTH_SHORT).show();
-                                            login.setText("登录");
-                                            menuItem.setVisible(false);
-                                            sp.edit().remove("name");
-                                            sp.edit().remove("pwd");
-                                            sp.edit().commit();
-                                            MyApp.isLogin = false;
+                        MyApp.isLogin = false;
+                        if (MyApp.isLogin) {
+                            menuItem.setVisible(false);
+                        } else {
+                            HttpManager.getInstance().getApiService(MyService.class).getUnlogin("user/logout/json")
+                                    .compose(RxUtils.<BaseResponse>rxScheduleThread())
+                                    .subscribe(new BaseObsever<BaseResponse>() {
+                                        @Override
+                                        public void onSuccess(BaseResponse data) {
+                                            if (data.getErrorMsg() == "") {
+                                                Toast.makeText(ShouYeActivity.this, "退出登录", Toast.LENGTH_SHORT).show();
+                                                login.setText("登录");
+                                                menuItem.setVisible(false);
+                                                sp.edit().remove("name");
+                                                sp.edit().remove("pwd");
+                                                sp.edit().commit();
+                                                MyApp.isLogin = false;
+                                            }
                                         }
-                                    }
 
-                                    private static final String TAG = "ShouYeActivity";
+                                        private static final String TAG = "ShouYeActivity";
 
-                                    @Override
-                                    public void onFail(String error) {
-                                        Toast.makeText(ShouYeActivity.this, error, Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                        @Override
+                                        public void onFail(String error) {
+                                            Toast.makeText(ShouYeActivity.this, error, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
                         break;
 
                 }
